@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { Client } = require('discord.js');
 const { load } = require('./moduleManager');
-const cache = require('./utils/cacheMe');
+const cache = require('./utils/globalcache');
 
 const client = new Client({
   intents: ['MessageContent', 'GuildMessages', 'Guilds', 'GuildMembers'],

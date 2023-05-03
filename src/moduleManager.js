@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const cache = require('./utils/cacheMe');
+const cache = require('./utils/globalcache');
+const build = require('./utils/cacheFactory');
 
 cache.set('modules', [], 0);
 
@@ -16,13 +17,14 @@ async function start(moduleName) {
   ) {
     module.handlers.forEach(h => {
       if (!h.name || !h.run) return;
-      cache.client.on(h.name, (...args) => h.run(...args));
+      cache.client.on(h.name, h.run);
     });
   }
 
   if (module.start) {
+    const CACHE_MODULE = build(60 * 1000);
     try {
-      await module.start();
+      await module.start(cache.client, CACHE_MODULE);
     } catch (error) {
       console.log(error);
     }
@@ -41,7 +43,6 @@ async function stop(moduleName) {
   ) {
     module.handlers.forEach(h => {
       if (!h.name || !h.run) return;
-      // FIXME no elimina el evento y sigue ejecutandose
       cache.client.removeListener(h.name, h.run);
     });
   }
@@ -65,6 +66,17 @@ async function load() {
     try {
       if (fs.existsSync(path.join(__dirname, 'modules', f, 'index.js'))) {
         module = require(path.join(__dirname, 'modules', f, 'index.js'));
+      } else if (
+        fs.existsSync(
+          path.join(__dirname, 'modules', f, `${f.split('.')[0]}.js`),
+        )
+      ) {
+        module = require(path.join(
+          __dirname,
+          'modules',
+          f,
+          `${f.split('.')[0]}.js`,
+        ));
       } else {
         module = require(path.join(__dirname, 'modules', f, `${f}.js`));
       }

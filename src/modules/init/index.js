@@ -1,5 +1,5 @@
+const cache = require('../../utils/globalcache');
 const { start } = require('../../moduleManager');
-const cache = require('../../utils/cacheMe');
 
 module.exports = {
   name: 'init',
